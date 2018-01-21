@@ -1,7 +1,0 @@
-# Test
-x <- rnorm(100)
-plot(x)
-y <- x*rnorm(100)
-plot(x,y)
-load("ECA.RData")
-save(ECA.air, file="ECA.RData")
