@@ -1,3 +1,5 @@
 # Test
 x <- rnorm(100)
 plot(x)
+y <- x*rnorm(100)
+plot(x,y)
