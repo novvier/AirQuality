@@ -3,16 +3,17 @@
 # :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 GraphAir <- function(data, cols = c("parameter", "station", "value"),
-	label = "value.n", param = "pm10",	ECA = "current", group = NULL,
-	prd = "Max", lab.null = TRUE, Print = c(7.5, 6)) {
+                     label = "value.n", param = "pm10",
+                     ECA = "current", group = NULL, prd = "Max", 
+                     lab.null = TRUE, Print = c(7.5, 6)) {
 	# ValueN
   # Graph concentrations compared to standard
 	#
 	# Args:
-	#   data: (data.frame) 
-	#   param: parameter (character)
-	#   cols: names columns for "p"arameter", "station", and "value"
-	#   labels: name column with labels or NULL for doesn't graph
+  #   data: (data.frame) 
+  #   param: parameter (character)
+  #   cols: names columns for "p"arameter", "station", and "value"
+  #   labels: name column with labels or NULL for doesn't graph
   #   ECA: regulation number (character)
   #   period: "24 horas", "8, horas", "anual", "Max" or "Min
   #   lab.null = doesn't graph labels TRUE (not labels), FALSE(labels)
@@ -54,8 +55,8 @@ GraphAir <- function(data, cols = c("parameter", "station", "value"),
   	load("./ECA.RData")
   	s.param <- ECA.air %>% filter(parameter == param)
   	#
-  	if (ECA == "current")
-  		ECA = "003-2017"
+    if (ECA == "current")
+  	ECA = "003-2017"
   	#
   	s.param[, "legal.f"] <- grepl(ECA, s.param[, "legal"])
   	s.legal <- s.param %>% filter(legal.f == TRUE)
