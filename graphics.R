@@ -3,9 +3,8 @@
 # :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 GraphAir <- function(data, cols = c("parameter", "station", "value"),
-										 label = "value.n", param = "pm10",
-										 ECA = "current", group = NULL, prd = "Max", 
-										 lab.null = TRUE, Print = c(7.5, 6)) {
+	label = "value.n", param = "pm10",	ECA = "current", group = NULL,
+	prd = "Max", lab.null = TRUE, Print = c(7.5, 6)) {
 	# ValueN
   # Graph concentrations compared to standard
 	#
