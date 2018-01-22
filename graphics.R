@@ -9,17 +9,15 @@ GraphAir <- function(data, cols = c("parameter", "station", "value"),
   # Graph concentrations compared to standard
   #
   # Args:
-  #
-  # Graph concentrations compared to standard
-  #
-  # Args:
   #   data: (data.frame) 
   #   param: parameter (character)
-  #   cols: names columns for "p"arameter", "station", and "value"
-  #   labels: name column with labels or NULL for doesn't graph
-  #   ECA: regulation number (character)
-  #   period: "24 horas", "8, horas", "anual", "Max" or "Min
-  #   lab.null = doesn't graph labels TRUE (not labels), FALSE(labels)
+	#   label: name column with labels or NULL for doesn't graph
+  #   cols: names columns for "parameter", "station", and "value"
+  #   ECA: regulation number or ECA value (character or numeric)
+  #   prd: monitoring period:
+	#			"24 horas", "8, horas", "anual", "Max" or "Min
+  #   lab.null = doesn't graph labels:
+	#			TRUE (not print labels) or FALSE(print labels)
   #   Print: print values in jpg (height & whith) in cm
   #     or NULL for doesn't print graph
   #   group: value for group (character)
@@ -163,4 +161,15 @@ GraphAir <- function(data, cols = c("parameter", "station", "value"),
   lattice.options(lat.op.def)
   #
   return(graph)
+}
+
+MultiGraph <- function(x, params = "parameter", ECA = "current",
+											 prd = "Max") {
+  # Create multi graphics
+  y <- x[, params]
+  y <- as.factor(y)
+  y <- levels(y)
+  yl <- length(y)
+	for (i in 1:yl)
+    GraphAir(data = x, param = y[i], ECA = ECA, prd = prd)
 }
