@@ -2,17 +2,20 @@
 # ::::::::::::::::::::::: Graphics functions ::::::::::::::::::::::::
 # :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-GraphAir <- function(data, cols = c("parameter", "station", "value"),
-                     label = "value.n", param = "pm10",
-                     ECA = "current", group = NULL, prd = "Max", 
-                     lab.null = TRUE, Print = c(7.5, 6)) {
+GraphAir <- function(data, pollutant = "pm10",
+	parameter = "parameter",  clasf = "station", value = "value",
+	group = NULL, label = NULL, ECA = "current", prd = "Max", 
+  lab.null = FALSE, Print = NULL, ...) {
   # Graph concentrations compared to standard
   #
   # Args:
   #   data: (data.frame) 
-  #   param: parameter (character)
-	#   label: name column with labels or NULL for doesn't graph
-  #   cols: names columns for "parameter", "station", and "value"
+	#		pollutant: pollutant (character)
+  #   parameter: name column with the pollutant name (character)
+	#   clasf: name colum for clasification (character)
+	#   value: name colum whit values (character)
+	#   group: value for group (character)
+	#   label: name column whit labels or NULL for doesn't graph
   #   ECA: regulation number or ECA value (character or numeric)
   #   prd: monitoring period:
 	#			"24 horas", "8, horas", "anual", "Max" or "Min
@@ -20,8 +23,7 @@ GraphAir <- function(data, cols = c("parameter", "station", "value"),
 	#			TRUE (not print labels) or FALSE(print labels)
   #   Print: print values in jpg (height & whith) in cm
   #     or NULL for doesn't print graph
-  #   group: value for group (character)
-  #
+	  #
   # Return:
   #   Graphics in window or print in jpg
   #
@@ -31,14 +33,14 @@ GraphAir <- function(data, cols = c("parameter", "station", "value"),
   }
   #
   # Select variables
-  x <- data[which(data[, cols[1]] == param), cols[2]]
-  y <- data[which(data[, cols[1]] == param), cols[3]]
+  x <- data[which(data[, parameter] == pollutant), clasf]
+  y <- data[which(data[, parameter] == pollutant), value]
   if (!is.null(label))
-    l <- data[which(data[, cols[1]] == param), label]
+    l <- data[which(data[, parameter] == pollutant), label]
   if (!is.null(group)) 
-    g = data[which(data[, cols[1]] == param), group]
+    g = data[which(data[, parameter] == pollutant), group]
   if (length(x) == 0) {
-    cat(paste("The parameter", param, "does't exist \n"))
+    cat(paste("The parameter", pollutant, "does't exist \n"))
     return()
   }
   #
@@ -51,14 +53,20 @@ GraphAir <- function(data, cols = c("parameter", "station", "value"),
     period.t = ""
     eca.v = ECA
   } else {
+  	if(!file.exists("./ECA.RData")){
+  		print("Download ECA data \n")
+  		download.file(paste0("https://raw.githubusercontent.com/",
+  												 "novvier/AirQuality/master/ECA.RData"),
+  									"./ECA.RData", method = "auto")
+  	}
   	load("./ECA.RData")
-  	s.param <- ECA.air %>% filter(parameter == param)
+  	s.pollutant <- ECA.air %>% filter(parameter == pollutant)
   	#
     if (ECA == "current")
   	  ECA = "003-2017"
   	#
-  	s.param[, "legal.f"] <- grepl(ECA, s.param[, "legal"])
-  	s.legal <- s.param %>% filter(legal.f == TRUE)
+  	s.pollutant[, "legal.f"] <- grepl(ECA, s.pollutant[, "legal"])
+  	s.legal <- s.pollutant %>% filter(legal.f == TRUE)
   	#
   	if (prd == "Min") {
   	  s.period = s.legal %>% filter(value == min(value))
@@ -74,7 +82,7 @@ GraphAir <- function(data, cols = c("parameter", "station", "value"),
   
   #
   if (length(eca.v) == 0) {
-    print(paste(param, "no presenta ECA para", prd))
+    print(paste(pollutant, "no presenta ECA para", prd))
     eca.v = 0
   }
   # 
@@ -100,9 +108,9 @@ GraphAir <- function(data, cols = c("parameter", "station", "value"),
     main.text = NULL
   } else {
     ylab.text <- expression(paste(mu, g/m^3, sep = ""))
-    main.text <- param.expres[which(param.text == param)]
+    main.text <- param.expres[which(param.text == pollutant)]
     if (length(main.text) == 0) 
-    	main.text = param
+    	main.text = pollutant
   }
   #
   if (is.null(group)) {
@@ -119,11 +127,12 @@ GraphAir <- function(data, cols = c("parameter", "station", "value"),
           panel.text(length(x), eca.v, paste("ECA",period.t),
             col="red", pos=3, offset=0.2, cex=0.75)
         }
-      })
+      }, ...)
   } else {
     graph <- barchart(y ~ x | g, ylim = seq(0, limy, limc),
       ylab = ylab.text,
       main = main.text,
+      as.table = TRUE,
       key=list(space = "bottom",
          lines=list(col = "red", lty = 2, lwd = 1),
          text=list(paste("ECA", period.t), col = "red", cex = 0.75)),
@@ -133,7 +142,7 @@ GraphAir <- function(data, cols = c("parameter", "station", "value"),
         if (eca.v > 0) {
           panel.abline(h = eca.v, lty = 2, col = "red")
         }
-      })
+      }, ...)
   }
   #
   # JPG print
@@ -142,12 +151,12 @@ GraphAir <- function(data, cols = c("parameter", "station", "value"),
     width.px = round(Print[1] * res / 2.54)
     height.px = round(Print[2] * res / 2.54)
     #
-    if(Encoding(param) == "UTF-8")
-      param = iconv(param, "UTF-8", "windows-1252")
+    if(Encoding(pollutant) == "UTF-8")
+      pollutant = iconv(pollutant, "UTF-8", "windows-1252")
     if(!dir.exists("./graphair"))
       dir.create("./graphair")
     #
-    nameg <- paste0("graphair/",param,".jpg")
+    nameg <- paste0("graphair/",pollutant,".jpg")
     jpeg(nameg, width = width.px, height = height.px, res = res) 
     print(graph)
     dev.off()
@@ -163,13 +172,13 @@ GraphAir <- function(data, cols = c("parameter", "station", "value"),
   return(graph)
 }
 
-MultiGraph <- function(x, params = "parameter", ECA = "current",
+MultiGraph <- function(x, pollutants = "parameter", ECA = "current",
 											 prd = "Max") {
   # Create multi graphics
-  y <- x[, params]
+  y <- x[, pollutants]
   y <- as.factor(y)
   y <- levels(y)
   yl <- length(y)
 	for (i in 1:yl)
-    GraphAir(data = x, param = y[i], ECA = ECA, prd = prd)
+    GraphAir(data = x, pollutant = y[i], ECA = ECA, prd = prd)
 }
